@@ -1,0 +1,136 @@
+
+#username_display
+{
+
+	font-size:x-large;
+	line-height:2em;
+	position:relative;
+	top:-13px;
+}
+
+#created_display
+{
+
+float:right;
+	font-size:large;
+	line-height:1em;
+	position:relative;
+		top:-0px;
+
+}
+
+#profile_photo
+{
+	text-align:center;
+}
+#rubah_password
+{
+	margin-right:10px;
+}
+
+#profile_photo .img-thumbnail
+{
+display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+#cv
+{
+	text-align:center;
+	display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+
+
+.label_name_column
+{
+float:left;
+width:20%;
+text-align:right;
+margin-right:20px;
+
+}
+
+.input_column input{
+margin-left: 0px;
+width:50%;
+}
+
+
+.input_button_column {
+
+float:right;
+
+width:57%;
+}
+
+
+.button-column
+{
+max-width:10px;
+}
+
+.content_container, .content_container a
+{
+	font-size:1.2em;
+}
+
+.form select
+{
+	font-size:1.2em;
+}
+
+
+
+
+table.detail-view th, table.detail-view td 
+{
+	font-size:1.2em;
+}
+
+.grid-view table.items th, .grid-view table.items td
+{
+	font-size:1.2em;
+}
+
+#upload_control input
+{
+margin-left:30px;
+
+}
+
+#update_profile
+{
+margin-right:0px;
+
+}
+
+.hidden {
+
+display: none
+}
+
+.form form {
+	margin-bottom:0px;
+}
+
+.wrap2 {
+	margin-bottom:0px;
+}
+
+.select2_input {
+
+padding-bottom:10px;
+}
+
+.content_container {
+
+padding-bottom:10px;
+}
+
+
+.assessments_news 
+{
+	
+}
