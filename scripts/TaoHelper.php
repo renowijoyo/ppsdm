@@ -60,7 +60,7 @@ public function newTesttaker($username, $password, $groupname)
 	
 	public function getProfileUri($profilename)
 	{
-		$sql = "select subject from statements where predicate = 'http://www.tao.lu/Ontologies/generis.rdf#login' and object = '".$profilename."'";
+		$sql = "select subject from statements where predicate = 'http://www.tao.lu/Ontologies/generis.rdf#login' and object = '".$profilename."' order by id desc limit 1";
 		$result = mysqli_query($this->tao_con,$sql);
 		$row = mysqli_fetch_array($result);
 		return $row['subject'];
@@ -75,19 +75,77 @@ public function newTesttaker($username, $password, $groupname)
 	public function getGroupUri($groupname) //group name have prepended by GROUP_
 	{
 
-
+/*
 	$sql = 'select * from (select subject from statements where object = "'.$groupname.'" and predicate = "http://www.w3.org/2000/01/rdf-schema#label") as tabel1
 			INNER JOIN 
 			statements
 			as tabel2 
 			on tabel1.subject = tabel2.subject
 			WHERE predicate="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"';
+*/
+
+			$subgroups = explode('/',$groupname);
+		$subgroup_size = sizeof($subgroups);
+	//echo $subgroup_size;
+	
+	$sql = 'SELECT
+	SUBJECT 
+FROM
+	statements
+WHERE
+	SUBJECT IN (
+		SELECT
+			SUBJECT
+		FROM
+			statements
+		WHERE
+			object IN (
+			
+				SELECT
+					SUBJECT 
+				FROM
+					statements
+				WHERE
+					SUBJECT IN (
+						SELECT
+							SUBJECT
+						FROM
+							statements
+						WHERE
+							object IN (
+						
+								SELECT
+									SUBJECT 
+								FROM
+									statements
+								WHERE
+									SUBJECT IN (
+										SELECT
+											SUBJECT
+										FROM
+											statements
+										WHERE
+											predicate = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+										AND object = "http://www.tao.lu/Ontologies/TAOGroup.rdf#Group"
+									)
+								AND predicate = "http://www.w3.org/2000/01/rdf-schema#label"
+								AND object = "'.$subgroups[0].'" #==========================================================
+							)
+						AND predicate = "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+					)
+				AND predicate = "http://www.w3.org/2000/01/rdf-schema#label"
+				AND object = "'.$subgroups[1].'" #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			)
+		AND predicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+	)
+AND object = "'.$subgroups[2].'"';
 
 		$result = mysqli_query($this->tao_con,$sql);
 		$row = mysqli_fetch_array($result);
 		return $row;
 
 	}
+	
 	
 	
 	
@@ -106,15 +164,60 @@ public function newTesttaker($username, $password, $groupname)
 		return $members;
 	}
 	
+	public function getTaoModeluri($id)
+	{
+		$sql ='select modeluri from models where modelid="'.$id.'"';
+		$result = mysqli_query($this->tao_con,$sql);
+		$row = mysqli_fetch_array($result);
+		return $row['modeluri'];
+	
+	}
+	
+	
 	public function alreadyMember($groupuri,$nameuri)
 	{
-		$sql ='select * from statements where subject ="'.$groupuri.'" and predicate ="http://www.tao.lu/Ontologies/TAOGroup.rdf#Members" and object="'.$nameuri.'"';
+		$sql ='select * from statements where subject ="'.$groupuri.'" and predicate ="http://www.tao.lu/Ontologies/TAOGroup.rdf#Members" and object="'.$nameuri.'" order by id desc';
 		$result = mysqli_query($this->tao_con,$sql);
 		$row = mysqli_fetch_array($result);
 		return $row;
 	}
 	
+	public function groupSignup($username, $group)
+	{
+		$groupuri_temp = $this->getGroupUri($group);
+	$groupuri = $groupuri_temp['SUBJECT'];
+	$nameuri = $this->getProfileUri($username);
+	$modelid = '1';
+	$modeluri = $this->getTaoModelUri($modelid);
+	echo 'yang didadftarkan adalah group : ' .$groupuri . ' dengan member : ' . $nameuri. '<br/>';
+	if ( isset($nameuri) && isset($groupuri) && is_null($this->alreadyMember($groupuri,$nameuri))) {
+								$row = array();
+								$row['modelid'] = $modelid;
+								$row['subject'] = $groupuri;
+								$row['predicate'] = "http://www.tao.lu/Ontologies/TAOGroup.rdf#Members";
+								$row['object'] = $nameuri;
+								$row['author'] = $modeluri.'superUser';
+								
+								$sqlinsert = 'insert into statements (modelid,subject,predicate,object,l_language,author,epoch) values (
+										"'.$row["modelid"].'",
+								"'.$row["subject"].'",
+								"'.$row["predicate"].'",
+								"'.$row["object"].'",
+								"",
+								"'.$row["author"].'",
+								CURRENT_TIMESTAMP	
+								)';
+						$insertresult = mysqli_query($this->tao_con,$sqlinsert);
+					
+				//	echo 'anda belum terdaftar';
+	} else {
 	
+						echo 'Anda sudah terdaftar sebelumnya ATAU ADA YANG SALAH<br/>';
+					//echo 'bayar';
+					echo '<a href="'.$_SERVER["HTTP_REFERER"].'"><button>Lanjut</button></a>';
+	}
+	
+	}
 	
 	public function addGroupMember($profilename, $group) //UNTUK PENAMBAHAN TESTTAKER KE GROUP DILAKUKAN MELALUI 2 METODE: menggunakan REST dan langsung ke Database
 	{
